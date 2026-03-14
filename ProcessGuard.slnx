@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="ProcessGuard/ProcessGuard.vcxproj" Id="ae229ec5-0867-4473-b7fd-ce0be2d8d97d" />
+</Solution>
