@@ -91,7 +91,7 @@ This project is a **personal learning exercise** as part of my cybersecurity stu
 ## 📊 Progress
 
 ```
-[██░░░░░░░░░░░░░░░░░░] 10% - Phase 0 Complete
+[██░░░░░░░░░░░░░░░░░] 10% - Phase 0 Complete
 
 ✅ Phase 0: Setup & Architecture
 ⬜ Phase 1: Basic ETW Consumer  
@@ -101,7 +101,7 @@ This project is a **personal learning exercise** as part of my cybersecurity stu
 ⬜ Phase 5: Testing & Validation
 ```
 
-*(Last update: Project initialization)*
+*(Last update: starting Phase 1)*
 
 ## 🚧 Acknowledged Limitations
 
@@ -160,7 +160,7 @@ Testing is performed only on:
 
 ## 📜 License
 
-MIT License - See [LICENSE](LICENSE) for details
+ GNU GPL v3 License - See [LICENSE](LICENSE) for details
 
 ---
 
@@ -173,6 +173,6 @@ Once ProcessGuard is functional, my next steps:
 
 ---
 
-**Last Update**: Project initialization  
-**Status**: 🔄 Phase 0 - Setup & Architecture  
+**Last Update**: 03/15/2026
+**Status**: 🔄 Phase 1 - ETW Monitoring
 **Topics**: `windows-internals` `edr` `security` `etw` `malware-detection` `cybersecurity`
