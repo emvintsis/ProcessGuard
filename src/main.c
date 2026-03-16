@@ -19,8 +19,9 @@ int main() {
 
 	printf("Press Enter to stop...\n");
 	getchar();
-	WaitForSingleObject(hThread, 2000);
+	WaitForSingleObject(hThread, 5000);
 	CloseHandle(hThread);
+	if (StopETWSession(tid) != 0) return -1;
 
 	return 0;
 }

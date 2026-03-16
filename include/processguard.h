@@ -15,6 +15,6 @@ static const GUID ProcessProviderGuid = { 0x22fb2cd6, 0x0e7b, 0x422b, {0xa0, 0xc
 
 int StartETWSession(CONTROLTRACE_ID* traceId);
 DWORD WINAPI ConsumeEvents(LPVOID lpParam);
-void StopETWSession();
+int StopETWSession();
 
 #endif

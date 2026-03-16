@@ -1,7 +1,9 @@
 #include "processguard.h"
 
 void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
-	printf("\t[*] Event received\n");
+	if (pEvent->EventHeader.EventDescriptor.Opcode == 1) {
+		printf("Process started\n");
+	}
 }
 
 DWORD WINAPI ConsumeEvents(LPVOID lpParam) { // a conventional WINAPI fuction who returns DWORD takes  LPVOID parameter

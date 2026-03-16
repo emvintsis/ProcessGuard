@@ -31,7 +31,21 @@ int StartETWSession(CONTROLTRACE_ID	*traceId) {
 	}
 	printf("[*] Provider enabled successfully\n");
 	
-	
+	free(properties);
+	return 0;
+}
+
+int StopETWSession(CONTROLTRACE_ID tid) {
+	PEVENT_TRACE_PROPERTIES properties = calloc(1, sizeof(EVENT_TRACE_PROPERTIES) + 1024);
+	properties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
+	properties->Wnode.BufferSize = sizeof(EVENT_TRACE_PROPERTIES) + 1024;
+	ULONG result = ControlTraceW(tid, NULL, properties, EVENT_TRACE_CONTROL_STOP);
+	if (result != ERROR_SUCCESS) {
+		printf("[-] ERROR with ControlTraceW : %lu\n", result);
+		free(properties);
+		return -1;
+	}
+
 	free(properties);
 	return 0;
 }
