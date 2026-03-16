@@ -24,6 +24,9 @@
     <ClCompile Include="..\src\etw_consumer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\etw_parser.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\processguard.h">

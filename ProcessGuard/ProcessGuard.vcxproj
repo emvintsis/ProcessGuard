@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\etw_consumer.c" />
+    <ClCompile Include="..\src\etw_parser.c" />
     <ClCompile Include="..\src\etw_session.c" />
     <ClCompile Include="..\src\main.c" />
   </ItemGroup>

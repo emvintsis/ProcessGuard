@@ -2,7 +2,10 @@
 
 void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
 	if (pEvent->EventHeader.EventDescriptor.Opcode == 1) {
-		printf("Process started\n");
+		DWORD pid = pEvent->EventHeader.ProcessId;
+		char* name = GetProcessName(pid);
+		printf("[%lu] %s\n", pid, name);
+		free(name);
 	}
 }
 
