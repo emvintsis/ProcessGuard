@@ -1,11 +1,11 @@
 #include "processguard.h"
 
 void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
-	if (pEvent->EventHeader.EventDescriptor.Opcode == 1) {
-		DWORD pid = pEvent->EventHeader.ProcessId;
-		char* name = GetProcessName(pid);
-		printf("[%lu] %s\n", pid, name);
-		free(name);
+	ProcessInfo pi = { 0 };
+	pi.pid = pEvent->EventHeader.ProcessId;
+	pi = GetProcessInfo(pi.pid);
+	if (pEvent->EventHeader.EventDescriptor.Opcode == 1 && pEvent->EventHeader.EventDescriptor.Version == 4) {
+		printf("\t[*] %lu Process %s created with PID %d (PPID:%d)\n",pEvent->EventHeader.TimeStamp, pi.processName, pi.pid, pi.ppid);
 	}
 }
 
