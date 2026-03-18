@@ -16,6 +16,7 @@ static const GUID ProcessProviderGuid = { 0x22fb2cd6, 0x0e7b, 0x422b, {0xa0, 0xc
 typedef struct {
 	DWORD pid;
 	char processName[MAX_PATH];
+	char fullPath[MAX_PATH];
 	DWORD ppid;
 }ProcessInfo;
 

@@ -87,7 +87,8 @@ ProcessInfo GetProcessInfo(DWORD pid) {
     ProcessInfo info;
     info.pid = pid;
     HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-    strcpy_s(info.processName,sizeof(info.processName), "Unknown"); // default name 
+    strcpy_s(info.fullPath, sizeof(info.fullPath), "Unknown"); // Default path
+    strcpy_s(info.processName, sizeof(info.processName), "Unknown");// default name 
     info.ppid = 0; // default value for ppid
     if (hProcess) {
 
@@ -96,6 +97,7 @@ ProcessInfo GetProcessInfo(DWORD pid) {
         if (QueryFullProcessImageNameA(hProcess, 0, path, &size)) {
             char* name = strrchr(path, '\\');
             strcpy_s(info.processName, sizeof(info.processName), (name ? name + 1 : path));
+            strcpy_s(info.fullPath, sizeof(info.fullPath), path);
 
             HMODULE ntdll = GetModuleHandleA("ntdll.dll");
             NtQueryInformationProcessFunc NtQueryInfoProcess =
