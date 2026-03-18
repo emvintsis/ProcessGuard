@@ -2,10 +2,31 @@
 
 void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
 	ProcessInfo pi = { 0 };
-	pi.pid = pEvent->EventHeader.ProcessId;
-	pi = GetProcessInfo(pi.pid);
+	pi.pid = *(DWORD*)pEvent->UserData;
+	LARGE_INTEGER timestamp = pEvent->EventHeader.TimeStamp;
+	FILETIME fileTime;
+	fileTime.dwLowDateTime = timestamp.LowPart;
+	fileTime.dwHighDateTime = timestamp.HighPart;
+	SYSTEMTIME systemTime;
+	if (!FileTimeToSystemTime(&fileTime, &systemTime)) {
+		printf("[-] ERROR with FileTimeToSystemTime : %lu\n", GetLastError());
+		return;
+	}
+	SYSTEMTIME fullTime;
+	if (!SystemTimeToTzSpecificLocalTime(NULL, &systemTime, &fullTime)) {
+		printf("[-] ERROR with SystemTimeToTzSpecificLocalTime : %lu\n", GetLastError());
+		return;
+	}
+
 	if (pEvent->EventHeader.EventDescriptor.Opcode == 1 && pEvent->EventHeader.EventDescriptor.Version == 4) {
-		printf("\t[*] %lu Process %s created with PID %d (PPID:%d)\n",pEvent->EventHeader.TimeStamp, pi.processName, pi.pid, pi.ppid);
+		pi = GetProcessInfo(pi.pid);
+		printf("\t[%02d:%02d:%02d] Process %s created with PID %d (PPID:%d)\n",
+			fullTime.wHour,
+			fullTime.wMinute,
+			fullTime.wSecond,
+			pi.processName,
+			pi.pid,
+			pi.ppid);
 	}
 }
 

@@ -84,7 +84,8 @@ typedef NTSTATUS(WINAPI* NtQueryInformationProcessFunc)(
 
 ProcessInfo GetProcessInfo(DWORD pid) {
     PROCESS_BASIC_INFORMATION pbi;
-    ProcessInfo info = { 0 };
+    ProcessInfo info;
+    info.pid = pid;
     HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
     strcpy_s(info.processName,sizeof(info.processName), "Unknown"); // default name 
     info.ppid = 0; // default value for ppid
@@ -107,7 +108,6 @@ ProcessInfo GetProcessInfo(DWORD pid) {
             }
             else {
                 info.ppid = pbi.InheritedFromUniqueProcessId;
-                info.pid = pbi.UniqueProcessId;
             }
         }
 
