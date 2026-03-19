@@ -64,56 +64,107 @@
 //    return NULL;
 //}
 
+typedef struct _UNICODE_STRING {
+	USHORT Length;
+	USHORT MaximumLength;
+	PWSTR  Buffer;
+} UNICODE_STRING, * PUNICODE_STRING;
+
+
+typedef struct _RTL_USER_PROCESS_PARAMETERS {
+	BYTE Reserved1[16];
+	PVOID Reserved2[10];
+	UNICODE_STRING ImagePathName;
+	UNICODE_STRING CommandLine;
+} RTL_USER_PROCESS_PARAMETERS, * PRTL_USER_PROCESS_PARAMETERS;
+
+
+typedef struct _PEB {
+	BYTE Reserved1[2];
+	BYTE BeingDebugged;
+	BYTE Reserved2[1];
+	PVOID Reserved3[2];
+	PVOID Ldr;
+	PRTL_USER_PROCESS_PARAMETERS ProcessParameters;
+} PEB, * PPEB;
 
 typedef LONG NTSTATUS;
 typedef struct _PROCESS_BASIC_INFORMATION {
-    PVOID Reserved1;
-    PVOID PebBaseAddress; // i replaced ppeb by pvoid because i dont use winternl.h
-    PVOID Reserved2[2];
-    ULONG_PTR UniqueProcessId;
-    ULONG_PTR InheritedFromUniqueProcessId;  // PPID
+	PVOID Reserved1;
+	PVOID PebBaseAddress; // i replaced ppeb by pvoid because i dont use winternl.h
+	PVOID Reserved2[2];
+	ULONG_PTR UniqueProcessId;
+	ULONG_PTR InheritedFromUniqueProcessId;  // PPID
 } PROCESS_BASIC_INFORMATION;
 
 typedef NTSTATUS(WINAPI* NtQueryInformationProcessFunc)(
-    HANDLE ProcessHandle,
-    UINT ProcessInformationClass,
-    PVOID ProcessInformation,
-    ULONG ProcessInformationLength,
-    PULONG ReturnLength
-    );
+	HANDLE ProcessHandle,
+	UINT ProcessInformationClass,
+	PVOID ProcessInformation,
+	ULONG ProcessInformationLength,
+	PULONG ReturnLength
+	);
 
 ProcessInfo GetProcessInfo(DWORD pid) {
-    PROCESS_BASIC_INFORMATION pbi;
-    ProcessInfo info;
-    info.pid = pid;
-    HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-    strcpy_s(info.fullPath, sizeof(info.fullPath), "Unknown"); // Default path
-    strcpy_s(info.processName, sizeof(info.processName), "Unknown");// default name 
-    info.ppid = 0; // default value for ppid
-    if (hProcess) {
+	PROCESS_BASIC_INFORMATION pbi;
+	ProcessInfo info;
+	info.pid = pid;
+	PEB peb;
+	RTL_USER_PROCESS_PARAMETERS upp;
 
-        char path[MAX_PATH];
-        DWORD size = MAX_PATH;
-        if (QueryFullProcessImageNameA(hProcess, 0, path, &size)) {
-            char* name = strrchr(path, '\\');
-            strcpy_s(info.processName, sizeof(info.processName), (name ? name + 1 : path));
-            strcpy_s(info.fullPath, sizeof(info.fullPath), path);
+	// PROCESS_VM_READ for Readprocessmemory and PROCESS_QUERY_LIMITED_INFORMATION for ntqueryinformationprocess
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, FALSE, pid);
+	strcpy_s(info.fullPath, sizeof(info.fullPath), "Unknown"); // Default path
+	strcpy_s(info.processName, sizeof(info.processName), "Unknown");// default name 
+	strcpy_s(info.cmdLine, sizeof(info.cmdLine), "Unknown");
+	info.ppid = 0; // default value for ppid
+	if (hProcess) {
 
-            HMODULE ntdll = GetModuleHandleA("ntdll.dll");
-            NtQueryInformationProcessFunc NtQueryInfoProcess =
-                (NtQueryInformationProcessFunc)GetProcAddress(ntdll, "NtQueryInformationProcess"); // Native function call
+		char path[MAX_PATH];
+		DWORD size = MAX_PATH;
+		if (QueryFullProcessImageNameA(hProcess, 0, path, &size)) {
+			char* name = strrchr(path, '\\');
+			strcpy_s(info.processName, sizeof(info.processName), (name ? name + 1 : path));
+			strcpy_s(info.fullPath, sizeof(info.fullPath), path);
 
-            NTSTATUS status = NtQueryInfoProcess(hProcess, 0, &pbi, sizeof(pbi), NULL);
+			HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+			NtQueryInformationProcessFunc NtQueryInfoProcess =
+				(NtQueryInformationProcessFunc)GetProcAddress(ntdll, "NtQueryInformationProcess"); // Native function call
 
-            if (status != 0x00000000) { // STATUS_SUCCESS
-                printf("[-] ERROR with NTQueryInformationprocess : %lu\n", status);
-            }
-            else {
-                info.ppid = pbi.InheritedFromUniqueProcessId;
-            }
-        }
+			NTSTATUS status = NtQueryInfoProcess(hProcess, 0, &pbi, sizeof(pbi), NULL);
 
-        CloseHandle(hProcess);
-    }
-    return info;
+			if (status != 0x00000000) { // STATUS_SUCCESS
+				printf("[-] ERROR with NTQueryInformationprocess : %lu\n", status);
+			}
+			else {
+				info.ppid = pbi.InheritedFromUniqueProcessId;
+				if (!ReadProcessMemory(hProcess, pbi.PebBaseAddress, &peb, sizeof(PEB), NULL)) { // i give to peb struct the content of the peb
+					printf("[-] ERROR with ReadProcessMemory (PEB) : %lu\n", GetLastError());
+				}
+				else {
+					if (!ReadProcessMemory(hProcess, peb.ProcessParameters, &upp, sizeof(RTL_USER_PROCESS_PARAMETERS), NULL)) {
+						printf("[-] ERROR with ReadProcessMemory (UPP) : %lu\n", GetLastError());
+					}
+					else {
+						WCHAR* unicodeCmdLine = malloc(upp.CommandLine.Length);
+						if (!ReadProcessMemory(hProcess, upp.CommandLine.Buffer, unicodeCmdLine, upp.CommandLine.Length, NULL)) {
+							printf("[-] ERROR with ReadProcessMemory (unicodeCmdLine): %lu\n", GetLastError());
+							free(unicodeCmdLine);
+						}
+						else {
+							int written = WideCharToMultiByte(CP_UTF8, 0, unicodeCmdLine,
+								min(upp.CommandLine.Length / 2, 4095), // protection against buffer overflow
+								info.cmdLine, 4096, NULL, NULL);
+							info.cmdLine[written] = '\0';
+							free(unicodeCmdLine);
+						}
+					}
+				}
+			}
+		}
+
+		CloseHandle(hProcess);
+
+	}
+	return info;
 }

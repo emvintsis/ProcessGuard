@@ -20,13 +20,14 @@ void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
 
 	if (pEvent->EventHeader.EventDescriptor.Opcode == 1 && pEvent->EventHeader.EventDescriptor.Version == 4) {
 		pi = GetProcessInfo(pi.pid);
-		printf("\t[%02d:%02d:%02d] Process %s created with PID %d (PPID:%d)\n",
+		printf("\t[%02d:%02d:%02d] Process %s created with PID %d (PPID:%d) CMDLINE : %s\n",
 			fullTime.wHour,
 			fullTime.wMinute,
 			fullTime.wSecond,
 			pi.processName,
 			pi.pid,
-			pi.ppid);
+			pi.ppid,
+			pi.cmdLine);
 	}
 }
 
