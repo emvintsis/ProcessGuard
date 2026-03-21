@@ -21,6 +21,20 @@ typedef struct {
 	char cmdLine[4096];
 }ProcessInfo;
 
+typedef enum {  PROCESS_START, PROCESS_STOP, THREAD_CREATE, IMAGE_LOAD, DRIVER_PROCESS_BLOCKED } EVENT_TYPE;
+typedef enum { SOURCE_ETW, SOURCE_DRIVER, SOURCE_SCANNER } SOURCE_TYPE;
+
+typedef struct {
+	EVENT_TYPE event;
+	SOURCE_TYPE source; 
+	DWORD pid;
+	DWORD ppid;
+	WCHAR image_name[MAX_PATH];
+	WCHAR command_line[1024];
+	FILETIME timestamp;
+	DWORD flags; // Metadata flags
+} TELEMETRY_EVENT;
+
 
 int StartETWSession(CONTROLTRACE_ID* traceId);
 DWORD WINAPI ConsumeEvents(LPVOID lpParam);
