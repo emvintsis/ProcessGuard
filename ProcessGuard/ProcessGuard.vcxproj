@@ -136,6 +136,7 @@
     <ClCompile Include="..\src\process_info.c" />
     <ClCompile Include="..\src\etw_session.c" />
     <ClCompile Include="..\src\main.c" />
+    <ClCompile Include="..\src\transport.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\processguard.h" />

@@ -17,6 +17,7 @@ int StartETWSession(CONTROLTRACE_ID	*traceId) {
 	if (result != ERROR_SUCCESS) {
 		printf("[-] ERROR with StartTraceW : %lu\n", result);
 		free(properties);
+		properties = NULL;
 		return -1;
 	}
 	printf("[+] Session PGSession started successfully\n");
@@ -33,11 +34,13 @@ int StartETWSession(CONTROLTRACE_ID	*traceId) {
 	if (result != ERROR_SUCCESS) {
 		printf("[-] ERROR with EnableTraceEx2 : %lu\n", result);
 		free(properties);
+		properties = NULL;
 		return -1;
 	}
 	printf("[*] Provider enabled successfully\n");
 	
 	free(properties);
+	properties = NULL;
 	return 0;
 }
 
@@ -49,9 +52,11 @@ int StopETWSession(CONTROLTRACE_ID tid) {
 	if (result != ERROR_SUCCESS) {
 		printf("[-] ERROR with ControlTraceW : %lu\n", result);
 		free(properties);
+		properties = NULL;
 		return -1;
 	}
 
 	free(properties);
+	properties = NULL;
 	return 0;
 }

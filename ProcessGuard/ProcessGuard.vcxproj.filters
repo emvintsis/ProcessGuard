@@ -24,7 +24,10 @@
     <ClCompile Include="..\src\etw_consumer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\etw_parser.c">
+    <ClCompile Include="..\src\process_info.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\transport.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

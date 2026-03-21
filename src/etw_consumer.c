@@ -22,15 +22,6 @@ void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
 	if (pEvent->EventHeader.EventDescriptor.Opcode == 1 && pEvent->EventHeader.EventDescriptor.Version == 4) {
 		pi = GetProcessInfo(pi.pid);
 		TELEMETRY_EVENT tEvent = { 0 };
-		printf("\t[%02d:%02d:%02d] Process %s created with PID %d (PPID:%d) CMDLINE : %s\n",
-			fullTime.wHour,
-			fullTime.wMinute,
-			fullTime.wSecond,
-			pi.processName,
-			pi.pid,
-			pi.ppid,
-			pi.cmdLine);
-
 		tEvent.event = PROCESS_START;
 		tEvent.pid = pi.pid;
 		tEvent.ppid = pi.ppid;

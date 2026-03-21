@@ -150,6 +150,7 @@ ProcessInfo GetProcessInfo(DWORD pid) {
 						if (!ReadProcessMemory(hProcess, upp.CommandLine.Buffer, unicodeCmdLine, upp.CommandLine.Length, NULL)) {
 							printf("[-] ERROR with ReadProcessMemory (unicodeCmdLine): %lu\n", GetLastError());
 							free(unicodeCmdLine);
+							unicodeCmdLine = NULL;
 						}
 						else {
 							int written = WideCharToMultiByte(CP_UTF8, 0, unicodeCmdLine,
@@ -157,6 +158,7 @@ ProcessInfo GetProcessInfo(DWORD pid) {
 								info.cmdLine, 4096, NULL, NULL);
 							info.cmdLine[written] = '\0';
 							free(unicodeCmdLine);
+							unicodeCmdLine = NULL;
 						}
 					}
 				}
