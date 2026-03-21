@@ -14,5 +14,6 @@ bin/
 build/
 out/
 
+__pycache__
 
 *.log
