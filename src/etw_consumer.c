@@ -1,6 +1,7 @@
 #include "processguard.h"
 
 void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
+
 	ProcessInfo pi = { 0 };
 	pi.pid = *(DWORD*)pEvent->UserData;
 	LARGE_INTEGER timestamp = pEvent->EventHeader.TimeStamp;
@@ -38,6 +39,11 @@ void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
 		MultiByteToWideChar(CP_UTF8, 0, pi.cmdLine, -1, tEvent.command_line, 1024);
 		MultiByteToWideChar(CP_UTF8, 0, pi.processName, -1, tEvent.image_name, MAX_PATH);
 		tEvent.flags = 0;
+		
+		EnterCriticalSection(&bufferLock);
+		rBuffer[head] = tEvent;
+		head = (head + 1) % BUFFER_SIZE;
+		LeaveCriticalSection(&bufferLock);
 	}
 }
 
