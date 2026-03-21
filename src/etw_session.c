@@ -1,6 +1,12 @@
 #include "processguard.h"
 
+TELEMETRY_EVENT rBuffer[BUFFER_SIZE]; // buffer for the rotating buff
+int head = 0;
+int tail = 0;
+CRITICAL_SECTION bufferLock;
+
 int StartETWSession(CONTROLTRACE_ID	*traceId) {
+	InitializeCriticalSection(&bufferLock); // With this function, two functions cant write and read on the same buffer on the same time
 	PEVENT_TRACE_PROPERTIES properties = calloc(1, sizeof(EVENT_TRACE_PROPERTIES) + 1024); // allocate clean memory
 	properties->Wnode.BufferSize = sizeof(EVENT_TRACE_PROPERTIES) + 1024; //  size of strcuture + 1024 for the buffersize 
 	properties->Wnode.Flags = WNODE_FLAG_TRACED_GUID; // This flag indicates to windows the structure will be used fort etw
@@ -11,6 +17,7 @@ int StartETWSession(CONTROLTRACE_ID	*traceId) {
 	if (result != ERROR_SUCCESS) {
 		printf("[-] ERROR with StartTraceW : %lu\n", result);
 		free(properties);
+		properties = NULL;
 		return -1;
 	}
 	printf("[+] Session PGSession started successfully\n");
@@ -27,11 +34,13 @@ int StartETWSession(CONTROLTRACE_ID	*traceId) {
 	if (result != ERROR_SUCCESS) {
 		printf("[-] ERROR with EnableTraceEx2 : %lu\n", result);
 		free(properties);
+		properties = NULL;
 		return -1;
 	}
 	printf("[*] Provider enabled successfully\n");
 	
 	free(properties);
+	properties = NULL;
 	return 0;
 }
 
@@ -43,9 +52,11 @@ int StopETWSession(CONTROLTRACE_ID tid) {
 	if (result != ERROR_SUCCESS) {
 		printf("[-] ERROR with ControlTraceW : %lu\n", result);
 		free(properties);
+		properties = NULL;
 		return -1;
 	}
 
 	free(properties);
+	properties = NULL;
 	return 0;
 }

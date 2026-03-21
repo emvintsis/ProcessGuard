@@ -1,6 +1,7 @@
 #include "processguard.h"
 
 void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
+
 	ProcessInfo pi = { 0 };
 	pi.pid = *(DWORD*)pEvent->UserData;
 	LARGE_INTEGER timestamp = pEvent->EventHeader.TimeStamp;
@@ -20,14 +21,20 @@ void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
 
 	if (pEvent->EventHeader.EventDescriptor.Opcode == 1 && pEvent->EventHeader.EventDescriptor.Version == 4) {
 		pi = GetProcessInfo(pi.pid);
-		printf("\t[%02d:%02d:%02d] Process %s created with PID %d (PPID:%d) CMDLINE : %s\n",
-			fullTime.wHour,
-			fullTime.wMinute,
-			fullTime.wSecond,
-			pi.processName,
-			pi.pid,
-			pi.ppid,
-			pi.cmdLine);
+		TELEMETRY_EVENT tEvent = { 0 };
+		tEvent.event = PROCESS_START;
+		tEvent.pid = pi.pid;
+		tEvent.ppid = pi.ppid;
+		tEvent.source = SOURCE_ETW;
+		tEvent.timestamp = fileTime;
+		MultiByteToWideChar(CP_UTF8, 0, pi.cmdLine, -1, tEvent.command_line, 1024);
+		MultiByteToWideChar(CP_UTF8, 0, pi.processName, -1, tEvent.image_name, MAX_PATH);
+		tEvent.flags = 0;
+		
+		EnterCriticalSection(&bufferLock);
+		rBuffer[head] = tEvent;
+		head = (head + 1) % BUFFER_SIZE;
+		LeaveCriticalSection(&bufferLock);
 	}
 }
 
