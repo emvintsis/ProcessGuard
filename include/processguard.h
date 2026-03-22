@@ -6,6 +6,8 @@
 #include <evntcons.h>
 #include <tdh.h>
 #include <stdio.h>
+#include <winhttp.h>
+#include "cJSON.h"
 
 #define PG_VERSION L"0.1.0"
 #define SESSION_NAME L"PGSession"
@@ -19,7 +21,7 @@ typedef struct {
 	DWORD ppid;
 	char processName[MAX_PATH];
 	char fullPath[MAX_PATH];
-	char cmdLine[4096];
+	char cmdLine[8192];
 }ProcessInfo;
 
 typedef enum {  PROCESS_START, PROCESS_STOP, THREAD_CREATE, IMAGE_LOAD, DRIVER_PROCESS_BLOCKED } EVENT_TYPE;

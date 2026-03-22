@@ -154,8 +154,8 @@ ProcessInfo GetProcessInfo(DWORD pid) {
 						}
 						else {
 							int written = WideCharToMultiByte(CP_UTF8, 0, unicodeCmdLine,
-								min(upp.CommandLine.Length / 2, 4095), // protection against buffer overflow
-								info.cmdLine, 4096, NULL, NULL);
+								min(upp.CommandLine.Length / 2, 8191), // protection against buffer overflow
+								info.cmdLine, 8191, NULL, NULL);
 							info.cmdLine[written] = '\0';
 							free(unicodeCmdLine);
 							unicodeCmdLine = NULL;
