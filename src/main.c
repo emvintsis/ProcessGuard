@@ -1,6 +1,8 @@
 #include "processguard.h"
 
 int main() {
+	setvbuf(stdout, NULL, _IONBF, 0); // disable buffering
+
 	CONTROLTRACE_ID tid;
 	if (StartETWSession(&tid) != 0) return -1;
 	HANDLE hThreadETW = CreateThread(
