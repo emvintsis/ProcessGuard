@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <winhttp.h>
 #include "cJSON.h"
+#include <lmcons.h>
+#include <iphlpapi.h>
 
 #define PG_VERSION L"0.1.0"
 #define SESSION_NAME L"PGSession"
@@ -28,6 +30,14 @@ typedef enum {  PROCESS_START, PROCESS_STOP, THREAD_CREATE, IMAGE_LOAD, DRIVER_P
 typedef enum { SOURCE_ETW, SOURCE_DRIVER, SOURCE_SCANNER } SOURCE_TYPE;
 
 typedef struct {
+	char hostname[MAX_COMPUTERNAME_LENGTH + 1];
+	char ip[16];
+	char mac[18];
+	char username[UNLEN + 1];
+	char agent_id[37];
+}HostInfo;
+
+typedef struct {
 	EVENT_TYPE event;
 	SOURCE_TYPE source; 
 	DWORD pid;
@@ -42,6 +52,7 @@ extern TELEMETRY_EVENT rBuffer[BUFFER_SIZE]; // buffer for the rotating buffer
 extern int head;
 extern int tail;
 extern CRITICAL_SECTION bufferLock;
+extern HostInfo hostInfo;
 
 
 int StartETWSession(CONTROLTRACE_ID* traceId);
@@ -49,6 +60,7 @@ DWORD WINAPI ConsumeEvents(LPVOID lpParam);
 char* ExtractProperty(PEVENT_RECORD pEvent, const char* propertyName);
 ProcessInfo GetProcessInfo(DWORD pid);
 DWORD WINAPI FlushToController(LPVOID lpParam);
+BOOL GetHostInfo();
 int StopETWSession();
 
 #endif
