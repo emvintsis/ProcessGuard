@@ -113,7 +113,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>advapi32.lib;psapi.lib;tdh.lib;winhttp.lib</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;psapi.lib;tdh.lib;winhttp.lib;iphlpapi.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\agent_info.c" />
     <ClCompile Include="..\src\cJSON.c" />
     <ClCompile Include="..\src\etw_consumer.c" />
     <ClCompile Include="..\src\process_info.c" />

@@ -4,7 +4,7 @@ HostInfo hostInfo;
 
 BOOL GetHostInfo() {
 
-	PIP_ADAPTER_INFO adapterInfo;
+	PIP_ADAPTER_INFO adapterInfo = NULL;
 	ULONG bufferSize = 0;
 
 	DWORD size = MAX_COMPUTERNAME_LENGTH + 1;
@@ -33,6 +33,25 @@ BOOL GetHostInfo() {
 		free(adapterInfo);
 		adapterInfo = NULL;
 		return FALSE;
+	}
+
+	PIP_ADAPTER_INFO current = adapterInfo;
+
+	while (current != NULL) {
+		if (strcmp(current->IpAddressList.IpAddress.String, "0.0.0.0") != 0 &&
+			strcmp(current->IpAddressList.IpAddress.String, "127.0.0.1") != 0) {
+			strcpy_s(hostInfo.ip, 16, current->IpAddressList.IpAddress.String);
+			
+			for (int i = 0; i < current->AddressLength; i += 1) {
+
+				// last bit without :
+				if (i == current->AddressLength - 1) sprintf(hostInfo.mac + (i * 3), "%02X", current->Address[i]);
+				else sprintf(hostInfo.mac + (i * 3), "%02X:", current->Address[i]);
+			}
+		}
+		if (hostInfo.mac[0] != '\0' && hostInfo.ip[0] != '\0') break;
+
+		current = current->Next;
 	}
 
 	free(adapterInfo);

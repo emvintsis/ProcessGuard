@@ -33,6 +33,9 @@
     <ClCompile Include="..\src\cJSON.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\agent_info.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\processguard.h">
