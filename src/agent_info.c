@@ -1,6 +1,6 @@
 #include "processguard.h"
 
-HostInfo hostInfo;
+HostInfo hi;
 
 BOOL GetHostInfo() {
 
@@ -8,13 +8,13 @@ BOOL GetHostInfo() {
 	ULONG bufferSize = 0;
 
 	DWORD size = MAX_COMPUTERNAME_LENGTH + 1;
-	if (!GetComputerNameA(hostInfo.hostname, &size)) {
+	if (!GetComputerNameA(hi.hostname, &size)) {
 		printf("[-] ERROR with GetComputerNameA : %lu\n", GetLastError());
 		return FALSE;
 	}
 	size = UNLEN + 1;
 
-	if (!GetUserNameA(hostInfo.username, &size)) {
+	if (!GetUserNameA(hi.username, &size)) {
 		printf("[-] ERROR with GetUserNameA : %lu\n", GetLastError());
 		return FALSE;
 	}
@@ -40,16 +40,16 @@ BOOL GetHostInfo() {
 	while (current != NULL) {
 		if (strcmp(current->IpAddressList.IpAddress.String, "0.0.0.0") != 0 &&
 			strcmp(current->IpAddressList.IpAddress.String, "127.0.0.1") != 0) {
-			strcpy_s(hostInfo.ip, 16, current->IpAddressList.IpAddress.String);
+			strcpy_s(hi.ip, 16, current->IpAddressList.IpAddress.String);
 			
 			for (int i = 0; i < current->AddressLength; i += 1) {
 
 				// last bit without :
-				if (i == current->AddressLength - 1) sprintf(hostInfo.mac + (i * 3), "%02X", current->Address[i]);
-				else sprintf(hostInfo.mac + (i * 3), "%02X:", current->Address[i]);
+				if (i == current->AddressLength - 1) sprintf_s(hi.mac + (i * 3), 3, "%02X", current->Address[i]);
+				else sprintf_s(hi.mac + (i * 3), 4, "%02X:", current->Address[i]);
 			}
 		}
-		if (hostInfo.mac[0] != '\0' && hostInfo.ip[0] != '\0') break;
+		if (hi.mac[0] != '\0' && hi.ip[0] != '\0') break;
 
 		current = current->Next;
 	}

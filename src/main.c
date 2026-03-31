@@ -3,6 +3,10 @@
 int main() {
 	setvbuf(stdout, NULL, _IONBF, 0); // disable buffering
 
+
+	if (!GetHostInfo()) return -1;
+	if (!RegisterAgent()) return -1;
+
 	CONTROLTRACE_ID tid;
 	if (StartETWSession(&tid) != 0) return -1;
 	HANDLE hThreadETW = CreateThread(

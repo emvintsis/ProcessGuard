@@ -52,15 +52,15 @@ extern TELEMETRY_EVENT rBuffer[BUFFER_SIZE]; // buffer for the rotating buffer
 extern int head;
 extern int tail;
 extern CRITICAL_SECTION bufferLock;
-extern HostInfo hostInfo;
+extern HostInfo hi;
 
-
+BOOL GetHostInfo();
+BOOL RegisterAgent();
 int StartETWSession(CONTROLTRACE_ID* traceId);
 DWORD WINAPI ConsumeEvents(LPVOID lpParam);
 char* ExtractProperty(PEVENT_RECORD pEvent, const char* propertyName);
 ProcessInfo GetProcessInfo(DWORD pid);
 DWORD WINAPI FlushToController(LPVOID lpParam);
-BOOL GetHostInfo();
 int StopETWSession();
 
 #endif

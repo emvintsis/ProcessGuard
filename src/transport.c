@@ -16,9 +16,9 @@ DWORD WINAPI FlushToController(LPVOID lpParam) {
 		return;
 	}
 	while (TRUE) {
-		cJSON* cObject = cJSON_CreateObject(); // like an handle for create a new json object
+		cJSON* cUuidObject = cJSON_CreateObject(); // like an handle for create a new json object
 		cJSON* cArray = cJSON_CreateArray();
-		cJSON_AddItemToObject(cObject, "events", cArray);
+		cJSON_AddItemToObject(cUuidObject, "events", cArray);
 		int eventsCount = 0;
 		Sleep(5000); // the callback send the data every 5 seconds
 		EnterCriticalSection(&bufferLock);
@@ -45,7 +45,7 @@ DWORD WINAPI FlushToController(LPVOID lpParam) {
 			eventsCount += 1;
 		}
 		if (eventsCount != 0) {
-			char* content = cJSON_PrintUnformatted(cObject);
+			char* content = cJSON_PrintUnformatted(cUuidObject);
 			printf("%s\n", content);
 			HINTERNET hRequest = WinHttpOpenRequest(hConnect, L"POST", L"/api/v1/telemetry/batch",
 				NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
@@ -76,6 +76,85 @@ DWORD WINAPI FlushToController(LPVOID lpParam) {
 				if (hRequest) WinHttpCloseHandle(hRequest);
 		}
 		LeaveCriticalSection(&bufferLock);
-		cJSON_Delete(cObject);
+		cJSON_Delete(cUuidObject);
 	}
 }
+
+BOOL RegisterAgent() {
+	BOOL success = FALSE;
+	char* response = NULL;
+	cJSON* root = NULL;
+	WCHAR* serverIp = L"192.168.122.1";
+	INTERNET_PORT serverPort = 8001;
+	HINTERNET hSession = WinHttpOpen(NULL, WINHTTP_ACCESS_TYPE_NO_PROXY, NULL, NULL, NULL); // open session
+	if (hSession == NULL) {
+		printf("[-] ERROR with WinHttpOpen (Register): %lu\n", GetLastError());
+		return FALSE;
+	}
+	HINTERNET hConnect = WinHttpConnect(hSession, serverIp, serverPort, 0); // Etablish connection to server
+	if (hConnect == NULL) {
+		printf("[-] ERROR with WinHttpConnect (Register): %lu\n", GetLastError());
+		return FALSE;
+	}
+	cJSON* cUuidObject = cJSON_CreateObject(); // like an handle for create a new json object
+
+	cJSON_AddStringToObject(cUuidObject, "hostname", hi.hostname);
+	cJSON_AddStringToObject(cUuidObject, "ip", hi.ip);
+	cJSON_AddStringToObject(cUuidObject, "mac", hi.mac);
+	cJSON_AddStringToObject(cUuidObject, "username", hi.username);
+
+	char* content = cJSON_PrintUnformatted(cUuidObject);
+	printf("%s\n", content);
+
+	HINTERNET hRequest = WinHttpOpenRequest(hConnect, L"POST", L"/api/v1/agents/register",
+		NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+
+	if (hRequest == NULL) {
+		printf("[-] ERROR with WinHttpOpenRequest: %lu\n", GetLastError());
+		goto cleanup;
+	}
+	WCHAR headers[64];
+	swprintf(headers, 64, L"Content-Length: %d", strlen(content));
+	if (!WinHttpAddRequestHeaders(hRequest, L"Content-Type: application/json", -1, WINHTTP_ADDREQ_FLAG_ADD)) {
+		printf("[-] ERROR with WinHttpAddRequestHeaders (content-type) : %lu\n", GetLastError());
+		goto cleanup;
+	}
+	if (!WinHttpAddRequestHeaders(hRequest, headers, -1, WINHTTP_ADDREQ_FLAG_ADD)) {
+		printf("[-] ERROR with WinHttpAddRequestHeaders (content-length) : %lu\n", GetLastError());
+		goto cleanup;
+	}
+	if (!WinHttpSendRequest(hRequest, NULL, 0, content, strlen(content), strlen(content), 0)) {
+		printf("[-] ERROR with WinHttpSendRequest : %lu\n", GetLastError());
+		goto cleanup;
+	}
+	if (!WinHttpReceiveResponse(hRequest, NULL)) {
+		printf("[-] ERROR with WinHttpReceiveResponse : %lu\n", GetLastError());
+		goto cleanup;
+	}
+	DWORD bufSize = 0;
+	if (!WinHttpQueryDataAvailable(hRequest, &bufSize)) {
+		printf("[-] ERROR with HttpQueryDataAvailable : %lu\n", GetLastError());
+		goto cleanup;
+	}
+	response = malloc(bufSize + 1);
+
+	if (!WinHttpReadData(hRequest, response, bufSize, NULL)) {
+		printf("[-] ERROR with WinHttpReadData : %lu\n", GetLastError());
+		goto cleanup;
+	}
+	response[bufSize] = '\0';
+	root = cJSON_Parse(response);
+
+	cJSON* objectValue = cJSON_GetObjectItem(root, "agent_id");
+	strcpy_s(hi.agent_id, sizeof(hi.agent_id), objectValue->valuestring);
+	printf(hi.agent_id);
+	success = TRUE;
+
+	cleanup:
+		if (content) cJSON_free(content);
+		if (hRequest) WinHttpCloseHandle(hRequest);
+		if (response) free(response);
+		if (cUuidObject) cJSON_Delete(cUuidObject);
+		if (root) cJSON_Delete(root);
+	return success;
+}							
