@@ -146,6 +146,10 @@ BOOL RegisterAgent() {
 	}
 	response[bufSize] = '\0';
 	root = cJSON_Parse(response);
+	if (root == NULL) {
+		printf("[-] ERROR with cJSON_Parse : %lu\n", GetLastError());
+		goto cleanup;
+	}
 
 	cJSON* objectValue = cJSON_GetObjectItem(root, "agent_id");
 	strcpy_s(hi.agent_id, sizeof(hi.agent_id), objectValue->valuestring);
@@ -204,6 +208,7 @@ HINTERNET ConnectWebSocket() {
 DWORD WINAPI ListenWebSocket(LPVOID lpParam) {
 	HINTERNET hWebSocket = (HINTERNET*)lpParam;
 	while (TRUE) {
+		BOOL success = FALSE;
 		char buf[4096];
 		DWORD pdwBytesRead = 0;
 		WINHTTP_WEB_SOCKET_BUFFER_TYPE peBufferType;
@@ -212,6 +217,66 @@ DWORD WINAPI ListenWebSocket(LPVOID lpParam) {
 			printf("[-] ERROR with WinHttpWebSocketReceive : %d\n", status);
 			break;
 		}
+		buf[pdwBytesRead] = '\0';
+		cJSON* root = cJSON_Parse(buf);
+		if (root == NULL) {
+			printf("[-] ERROR with cJSON_Parse : %lu\n", GetLastError());
+			break;
+		}
+		cJSON* command = cJSON_GetObjectItem(root, "command");
+		if (command == NULL) {
+			printf("[-] ERROR : Invalid command\n");
+			goto cleanup;
+		}
+		cJSON* parameter = cJSON_GetObjectItem(root, "parameter");
+		if (parameter == NULL) {
+			printf("[-] ERROR : Invalid parameter\n");
+			goto cleanup;
+		}
+
+		if (strcmp(command->valuestring, "KILL") == 0) {
+			cJSON* pid = cJSON_GetObjectItem(parameter, "pid");
+			if (pid == NULL) {
+				printf("[-] ERROR : Invalid pid\n");
+				goto cleanup;
+			}
+			HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid->valueint);
+			if (hProcess == NULL) {
+				printf("[-] ERROR with OpenProcess %lu\n", GetLastError());
+				goto cleanup;
+			}
+			if (!TerminateProcess(hProcess, 0xDEAD)) {
+				printf("[-] ERROR with TerminateProcess %lu\n", GetLastError());
+				CloseHandle(hProcess);
+				goto cleanup;
+			}
+			CloseHandle(hProcess);
+			success = TRUE;
+		}
+		else if (strcmp(command->valuestring, "SCAN") == 0){
+			printf("[*] Command not yet implemented\n");
+			success = TRUE;
+			goto cleanup;
+		}
+		else if (strcmp(command->valuestring, "COLLECT") == 0) {
+			printf("[*] Command not yet implemented\n");
+			success = TRUE;
+			goto cleanup;
+		}
+		else if (strcmp(command->valuestring, "YARA_SCAN") == 0) {
+			printf("[*] Command not yet implemented\n");
+			success = TRUE;
+			goto cleanup;
+		}
+		else {
+			printf("[-] ERROR : Invalid command");
+			goto cleanup;
+		}
+
+		cleanup:
+			if (root) cJSON_Delete(root);
+			if (!success) break;
+		
 	}
 	return 0;
 }
