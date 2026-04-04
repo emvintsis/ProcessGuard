@@ -62,6 +62,7 @@ char* ExtractProperty(PEVENT_RECORD pEvent, const char* propertyName);
 ProcessInfo GetProcessInfo(DWORD pid);
 DWORD WINAPI FlushToController(LPVOID lpParam);
 HINTERNET ConnectWebSocket();
+DWORD WINAPI ListenWebSocket(LPVOID lpParam);
 int StopETWSession();
 
 #endif

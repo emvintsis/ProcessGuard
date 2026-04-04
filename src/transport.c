@@ -200,3 +200,18 @@ HINTERNET ConnectWebSocket() {
 	}
 	return hWebSocketHandle;
 }
+
+DWORD WINAPI ListenWebSocket(LPVOID lpParam) {
+	HINTERNET hWebSocket = (HINTERNET*)lpParam;
+	while (TRUE) {
+		char buf[4096];
+		DWORD pdwBytesRead = 0;
+		WINHTTP_WEB_SOCKET_BUFFER_TYPE peBufferType;
+		DWORD status = WinHttpWebSocketReceive(hWebSocket, buf, 4096, &pdwBytesRead, &peBufferType);
+		if (status != NO_ERROR) {
+			printf("[-] ERROR with WinHttpWebSocketReceive : %d\n", status);
+			break;
+		}
+	}
+	return 0;
+}
