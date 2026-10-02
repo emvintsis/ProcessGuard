@@ -3,7 +3,7 @@
 DWORD WINAPI FlushToController(LPVOID lpParam) {
 	char imagename[1024];
 	char commandLine[8192];
-	WCHAR* serverIp = L"192.168.122.1";
+	WCHAR* serverIp = L"127.0.0.1";
 	INTERNET_PORT serverPort = 8001;
 	HINTERNET hSession = WinHttpOpen(NULL, WINHTTP_ACCESS_TYPE_NO_PROXY, NULL, NULL, 0); // open session
 	if (hSession == NULL) {
@@ -85,7 +85,7 @@ BOOL RegisterAgent() {
 	BOOL success = FALSE;
 	char* response = NULL;
 	cJSON* root = NULL;
-	WCHAR* serverIp = L"192.168.122.1";
+	WCHAR* serverIp = L"127.0.0.1";
 	INTERNET_PORT serverPort = 8001;
 	HINTERNET hSession = WinHttpOpen(NULL, WINHTTP_ACCESS_TYPE_NO_PROXY, NULL, NULL, 0); // open session
 	if (hSession == NULL) {
@@ -166,7 +166,7 @@ BOOL RegisterAgent() {
 }
 
 HINTERNET ConnectWebSocket() {
-	WCHAR* serverIp = L"192.168.122.1";
+	WCHAR* serverIp = L"127.0.0.1";
 	INTERNET_PORT serverPort = 8001;
 	WCHAR endpointPath[64];
 	// un wchar occupe 2 octets donc endpointpath fait 128 octets , en divisant j'obtiens le bon nombre de caracteres
