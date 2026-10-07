@@ -1,6 +1,8 @@
 #ifndef PROCESSGUARD_H
 #define PROCESSGUARD_H
 
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <Windows.h>
 #include <evntrace.h>
 #include <evntcons.h>
@@ -26,7 +28,7 @@ typedef struct {
 	char cmdLine[8192];
 }ProcessInfo;
 
-typedef enum {  PROCESS_START, PROCESS_STOP, THREAD_CREATE, IMAGE_LOAD, DRIVER_PROCESS_BLOCKED } EVENT_TYPE;
+typedef enum { PROCESS_START, PROCESS_STOP, THREAD_CREATE, IMAGE_LOAD, DRIVER_PROCESS_BLOCKED, NETWORK_CONNECT, NETWORK_ACCEPT, HOOK_DETECTED } EVENT_TYPE;
 typedef enum { SOURCE_ETW, SOURCE_DRIVER, SOURCE_SCANNER } SOURCE_TYPE;
 
 typedef struct {
@@ -39,13 +41,19 @@ typedef struct {
 
 typedef struct {
 	EVENT_TYPE event;
-	SOURCE_TYPE source; 
+	SOURCE_TYPE source;
 	DWORD pid;
 	DWORD ppid;
 	WCHAR image_name[MAX_PATH];
 	WCHAR command_line[1024];
 	FILETIME timestamp;
-	DWORD flags; // Metadata flags
+	DWORD flags;
+	char source_address[64];
+	char destination_address[64];
+	USHORT source_port;
+	USHORT destination_port;
+	char hook_module[MAX_PATH];
+	char hook_function[128];
 } TELEMETRY_EVENT;
 
 extern TELEMETRY_EVENT rBuffer[BUFFER_SIZE]; // buffer for the rotating buffer
@@ -53,16 +61,20 @@ extern int head;
 extern int tail;
 extern CRITICAL_SECTION bufferLock;
 extern HostInfo hi;
+extern volatile LONG pgRunning;
 
 BOOL GetHostInfo();
 BOOL RegisterAgent();
 int StartETWSession(CONTROLTRACE_ID* traceId);
 DWORD WINAPI ConsumeEvents(LPVOID lpParam);
 char* ExtractProperty(PEVENT_RECORD pEvent, const char* propertyName);
+BOOL ExtractUInt64Property(PEVENT_RECORD pEvent, const char* propertyName, ULONGLONG* value);
+BOOL ExtractAddressProperty(PEVENT_RECORD pEvent, const char* propertyName, char* output, size_t outputSize);
+DWORD WINAPI MonitorHooks(LPVOID lpParam);
 ProcessInfo GetProcessInfo(DWORD pid);
 DWORD WINAPI FlushToController(LPVOID lpParam);
 HINTERNET ConnectWebSocket();
 DWORD WINAPI ListenWebSocket(LPVOID lpParam);
-int StopETWSession();
+int StopETWSession(CONTROLTRACE_ID tid);
 
 #endif
