@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -113,7 +113,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>advapi32.lib;psapi.lib;tdh.lib;winhttp.lib;iphlpapi.lib;ws2_32.lib</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;psapi.lib;tdh.lib;winhttp.lib;iphlpapi.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -137,7 +137,6 @@
     <ClCompile Include="..\src\etw_consumer.c" />
     <ClCompile Include="..\src\process_info.c" />
     <ClCompile Include="..\src\etw_session.c" />
-    <ClCompile Include="..\src\hook_monitor.c" />
     <ClCompile Include="..\src\main.c" />
     <ClCompile Include="..\src\transport.c" />
   </ItemGroup>
