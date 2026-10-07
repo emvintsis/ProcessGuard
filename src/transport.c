@@ -26,7 +26,7 @@ DWORD WINAPI FlushToController(LPVOID lpParam) {
 			WideCharToMultiByte(CP_UTF8, 0, rBuffer[tail].command_line, -1, commandLine, 8192, NULL, NULL);
 			WideCharToMultiByte(CP_UTF8, 0, rBuffer[tail].image_name, -1, imagename, 1024, NULL, NULL);
 			// convert to 64 bits
-			ULONGLONG unix_timestamp = (rBuffer[tail].timestamp.dwHighDateTime << 32) | rBuffer[tail].timestamp.dwLowDateTime;
+			ULONGLONG unix_timestamp = (ULONGLONG)(rBuffer[tail].timestamp.dwHighDateTime << 32) | rBuffer[tail].timestamp.dwLowDateTime;
 			// convert to unix timestamp (1970 instead of 1601)
 			unix_timestamp = ((unix_timestamp - 116444736000000000) / 10000000);
 
