@@ -19,18 +19,34 @@ void WINAPI EventRecordCallback(PEVENT_RECORD pEvent) {
 		return;
 	}
 
+	//if (pEvent->EventHeader.EventDescriptor.Opcode == 1 && pEvent->EventHeader.EventDescriptor.Version == 4) {
+	//	pi = GetProcessInfo(pi.pid);
+	//	TELEMETRY_EVENT tEvent = { 0 };
+	//	tEvent.event = PROCESS_START;
+	//	tEvent.pid = pi.pid;
+	//	tEvent.ppid = pi.ppid;
+	//	tEvent.source = SOURCE_ETW;
+	//	tEvent.timestamp = fileTime;
+	//	MultiByteToWideChar(CP_UTF8, 0, pi.cmdLine, -1, tEvent.command_line, 1024);
+	//	MultiByteToWideChar(CP_UTF8, 0, pi.processName, -1, tEvent.image_name, MAX_PATH);
+	//	tEvent.flags = 0;
+	//	
+	//	EnterCriticalSection(&bufferLock);
+	//	rBuffer[head] = tEvent;
+	//	head = (head + 1) % BUFFER_SIZE;
+	//	LeaveCriticalSection(&bufferLock);
+	//}
 	if (pEvent->EventHeader.EventDescriptor.Opcode == 1 && pEvent->EventHeader.EventDescriptor.Version == 4) {
 		pi = GetProcessInfo(pi.pid);
 		TELEMETRY_EVENT tEvent = { 0 };
-		tEvent.event = PROCESS_START;
+		tEvent.event = PROCESS_STOP;
 		tEvent.pid = pi.pid;
 		tEvent.ppid = pi.ppid;
 		tEvent.source = SOURCE_ETW;
 		tEvent.timestamp = fileTime;
-		MultiByteToWideChar(CP_UTF8, 0, pi.cmdLine, -1, tEvent.command_line, 1024);
 		MultiByteToWideChar(CP_UTF8, 0, pi.processName, -1, tEvent.image_name, MAX_PATH);
 		tEvent.flags = 0;
-		
+
 		EnterCriticalSection(&bufferLock);
 		rBuffer[head] = tEvent;
 		head = (head + 1) % BUFFER_SIZE;
