@@ -1,4 +1,6 @@
 #include "processguard.h"
+#include "pg_hook_monitor.h"
+#include "pg_net_monitor.h"
 
 int main() {
 	setvbuf(stdout, NULL, _IONBF, 0); // disable buffering
